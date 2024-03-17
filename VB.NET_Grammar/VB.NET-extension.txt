@@ -1,0 +1,42 @@
+TAB ::= "\t"
+
+stringlit ::= '"' (any_character_except_double_quotes | '""')* '"'
+
+number ::= [ "-" | "+" ] digit* ["." digit+] [("e" | "E") digit+]
+| [ "-" | "+" ] octnumber
+| [ "-" | "+" ] hexnumber
+
+octnumber ::= "&" ("o" | "O") octdigit*
+
+hexnumber ::= "&" ("h" | "H") hexdigit*
+
+octdigit ::= "0"
+"1"
+"2"
+"3"
+"4"
+"5"
+"6"
+"7"
+
+digit ::= octdigit
+"8"
+"9"
+
+hexdigit ::= digit
+"a"
+"A"
+"b"
+"B"
+"c"
+"C"
+"d"
+"D"
+"e"
+"E"
+"f"
+"F"
+
+vbcomment ::= "'" any_characters newline
+
+newline ::= "\n"
