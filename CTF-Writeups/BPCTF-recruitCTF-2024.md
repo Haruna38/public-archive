@@ -284,6 +284,7 @@ attack('http://blackpinker.rocks:30759');
 **Result**
 
 ![Flag](./images/bpctf-recruitctf-2024/web-overkill-2.png)
+
 **Flag**
 
 `BPCTF{1TS_nOt_A_Bu6_ltS_a_1e4tUrE_734210e6ce37}`
@@ -309,6 +310,7 @@ Here's the demo payload for the 2nd approach if you want to learn how it works, 
 ![3 challenge codes](./images/bpctf-recruitctf-2024/pwn-general.png)
 
 And win function for all challenges in this category are the same, is to give remote shell execution (as shown in decompiled binaries in IDA Freeware 8.2)
+
 ![Decompiled win function](./images/bpctf-recruitctf-2024/pwn-general-1.png)
 ### bofintro
 ![bofintro](./images/bpctf-recruitctf-2024/pwn-bofintro.png)
@@ -586,6 +588,7 @@ It only checks whether the last `t` characters (where `t` is the charcode of the
 **How to perform the attack**
 
 ![AES CBC Decryption](./images/bpctf-recruitctf-2024/crypto-babypad-1.png)
+
 *How AES CBC Decryption works (for reference)*
 
 First, we need to know the length of actual pad (to reduce number of guesses), by replacing a random bit at position -16 - i (where 1 <= i <= 16, decreasing) until server returns the correct pad message.
