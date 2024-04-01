@@ -72,6 +72,7 @@ def get_level_result(self, level):
 ```
 
 *Game screenshot* (Not an actual game)
+
 ![Game screenshot](./images/bpctf-recruitctf-2024/web-bp88-1.png)
 
 This problem is to "predict" PRNG value by using the known seed.
