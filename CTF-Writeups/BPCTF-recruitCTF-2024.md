@@ -5,15 +5,15 @@ Here is my writeup for some of the problems i find interesting or challenging fo
 Problems will be split by categories for better organization and navigation between problems.
 
 ## List Of Problems
-- **Web**
+- [**Web**](#web)
 	- [BP88](#bp88)
 	- [Overkill](#overkill)
-- **Pwn**
+- [**Pwn**](#pwn)
 	- [bofintro](#bofintro)
 	- [canaryintro](#canaryintro)
 	- [pieintro](#pieintro)
 	- [gotintro](#gotintro)
-- **Crypto**
+- [**Crypto**](#crypto)
 	- [Baby Pad](#baby-pad)
 	- [Super Computer v2](#super-computer-v2)
 	- [Baby RSA 1](#baby-rsa-1)
