@@ -23,9 +23,7 @@ Problems will be split by categories for better organization and navigation betw
 ### BP88
 ![3 levels of BP88](./images/bpctf-recruitctf-2024/web-bp88.png)
 
-BP88 has 3 levels but only one of them can be used to get flags for all 3 challenges.
-
-It's a challenge based on a... uh nevermind it's just a RNG betting game.
+BP88 has 3 levels but only one of them can be used to get flags for all 3 challenges. It's a challenge based on a... uh nevermind it's just a RNG betting game.
 
 The problem here is, seed for randomization is already exposed in source code (and in the game screen):
 
@@ -76,7 +74,25 @@ def get_level_result(self, level):
 *Game screenshot* (Not an actual game)
 ![Game screenshot](./images/bpctf-recruitctf-2024/web-bp88-1.png)
 
-To deal with the `#[REDACTED]` game ID problem in Level 3, you can keep the tab at lvl2 open even after finishing it, then duplicate and open a tab with lvl3. But don't play all-in since the error of ID difference between lvl2 and 3 is 1 (second).
+This problem is to "predict" PRNG value by using the known seed.
+
+To deal with the `#[REDACTED]` game ID problem in Level 3, I can keep the tab at lvl2 open even after finishing it, then duplicate and open a tab with lvl3. But don't play all-in since the error of ID difference between lvl2 and 3 is 1 (second).
+
+Here is a simple code that can be used to guess whether to bet "tai" or "xiu" given a seed:
+
+```py
+import random
+
+seed = int(input("Enter seed: "))
+
+random.seed(seed)
+
+val = 0
+for i in range(0, 3):
+	val += random.randint(1, 6)
+
+print("tai" if val >= 11 else "xiu")
+```
 
 **After finished 3 levels**
 
