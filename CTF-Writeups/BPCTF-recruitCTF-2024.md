@@ -1514,13 +1514,13 @@ listen("blackpinker.rocks", 30911)
 }
 ```
 
-**Warning: This method is possible after so many trials and errors messing around with Docker localhost of the challenge instance, `jsonwebtoken`, `nestjs/jwt` and JS prototypes method knowledge, so i suggest reading the code of such libarries carefully before reading eveything below!**
+**Warning: This method is possible after so many trials and errors messing around with Docker localhost of the challenge instance, `jsonwebtoken`, `nestjs/jwt` and JS prototypes methods, so i suggest reading the code of such libraries carefully as well as having some JS prototype knowledge before reading eveything below!**
 
 This approach focuses on  disabling JWT verification server-side, since there's a `None` algorithm in [list of JWT algorithms](https://github.com/auth0/node-jsonwebtoken#algorithms-supported).
 
 Normally, only `algorithm: "none"` should be enough to do the job, but since [JWT Verify function implementation](https://github.com/auth0/node-jsonwebtoken/blob/e1fa9dcc12054a8681db4e6373da1b30cf7016e3/verify.js) is very very weird (and stupid) for `None` algorithm verification, we also need to also do these approaches along with it:
 
-1. Include `algorithms: ["none"]` as list of algorithms AND `alg: "none"` (just for safety) so the code won't throw, because of this:
+1. Include `algorithms: ["none"]` as list of algorithms, `alg: "none"` (just for safety), and `"algorithm": "none",` (it might be touched somewhere), so the code won't throw, because of this:
 
 [*jsonwebtoken/verify.js:L144*](https://github.com/auth0/node-jsonwebtoken/blob/e1fa9dcc12054a8681db4e6373da1b30cf7016e3/verify.js#L144)
 ```js
@@ -1650,6 +1650,8 @@ Why the first one? Because at first `username` is not appeared in `flatnest` loo
 3. Finally, after creating a jwt token with none algorithm, please check if it ends with `.` first and appending one if not, BEFORE sending that token to server, or else you can get a `Invalid signature` error
 
 **Final payload**
+
+(Well it's the same as the payload at the start of this section but whatever, i'm lazy to scroll up so :D)
 ```js
 {
 	"sus": "no",
