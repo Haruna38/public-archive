@@ -213,7 +213,7 @@ BUT, `@nestjs/jwt` package (used by `nestjs`) acts as "middleware" from user app
 
 Then i found this intersting code in the `getSecretKey()` method:
 
-[*jwt/lib/jwt.service.ts:L178*](https://github.com/nestjs/jwt/blob/1133e904ce3dcb60bc1b6c74e385c73a6ae70e1f/lib/jwt.service.ts:L178)
+[*jwt/lib/jwt.service.ts:L178*](https://github.com/nestjs/jwt/blob/1133e904ce3dcb60bc1b6c74e385c73a6ae70e1f/lib/jwt.service.ts#L178)
 ```js
 private overrideSecretFromOptions(secret: GetSecretKeyResult) {
     if (this.options.secretOrPrivateKey) {
@@ -512,7 +512,7 @@ Then enter those 2 values and the `cat flag`:
 
 ![Baby Pad](./images/bpctf-recruitctf-2024/crypto-babypad.png)
 
-As the hint suggested, [Padding Oracle attack](https://en.wikipedia.org/wiki/Padding_oracle_attack) will be needed for this challenge.
+As the hint suggested, [Padding Oracle attack](https://en.wikipedia.org/wiki/Padding_oracle_attack) is needed for this challenge.
 
 Server code:
 ```py
